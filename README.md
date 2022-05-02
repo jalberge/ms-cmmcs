@@ -1,4 +1,4 @@
-This repo contains code, instructions and data to reproduce analysis and figures from the wgs cmmcs paper.
+This repo contains code, instructions and data to reproduce analysis and figures from the wgs ctc paper.
 
 # Processing of sequencing data
 
@@ -16,40 +16,42 @@ Code indexing per figure - Each Rmarkdown (.Rmd) file can be run within Rstudio,
 
 Non-identifiable data and aggregated data are given in sub-data folders of each chapter. Raw data are stored at dbGAP under accession numver (#**enter ID when evailable**). For compiled raw mutation data please contact us (emails above).
 
-## Figure 1 (CMMC enumeration)
+# Code for main figures
+
+## Figure 1 (CTC enumeration)
 
 This figure describes general enumeration results with data, code, and figures available in the `1_enumeration` folder
 
 * Fig 1a: Workflow
 * Fig 1b-d: `1_enumeration/enumeration_mgus_smm.Rmd`
-* Fig 1e: todo
 
-## Figure 2 (Matched BMPC-CMMC analysis)
+## Figure 2 (Matched BMPC-CTC analysis)
 
 This figure gathers general statistics on sequencing capability
 
 * Fig 2a,b: Counts from enumeration and purity from ABSOLUTE: `2_wgs/2_overall_stats.Rmd`
 * Fig 2d: Data, code, figures in `2_wgs/3_matched_CNV_tx.Rmd`
 
-## Figure 3 (CMMC only analysis)
+## Figure 3 (CTC only analysis)
 
 This figures leverages blood-only samples and describe genomic landscape from there
 
 * Fig 3a: Data, code, figures in `2_wgs/4_cmmc_only_CNV_tx.Rmd`
+* Fig 3c,d code in `2_wgs/6_circos_plots_snv_sv_cnv.md` and functions for circos plots in `/0_utils/circos_utils.R`
 
-## Figure 4 (mutation landscape in CMMCs)
+## Figure 4 (Compared clonal architecture of matched CTCs and BMPCs and CTCs longitudinally)
 
-* Fig 4a: Power analysis from `2_wgs/2_overall_stats.Rmd`
-* Fig 4b: Number of SNVs/indels from `2_wgs/5_pre_clustering_SNVs.Rmd`
-* Fig 4e: Signature analyses code and figures in `3_signature_analyzer/2_aggregate_runs_and_replot_matrices.Rmd`
+* Fig 4ai: Pre/Post-phylogic clustering from `4_phylogic/1_post_clustering_SNVs_matched.md`
+* Fig 4bi,ci: Pre/Post-phylogic clustering from `4_phylogic/2_post_clustering_SNVs_longitudinal_samples.md`
 
-## Figure 5 (Compared clonal architecture of matched CMMCs and BMPCs)
+## Figure 6 (Mutational signatures and complex structural events)
 
-* Fig 5a-b-c: Post-phylogic clustering from `2_wgs/8_post_clustering_SNVs.Rmd`
-* Fig 5d: Pre-pgylogic clustering CCF density plots from `2_wgs/8_post_clustering_SNVs.Rmd`
+* Fig 6a: Mutational processes in `3_signature_analyzer/2_aggregate_runs_and_replot_matrices.md`
+* Fig 6b,6c,6d: `2_wgs/6_circos_plots_snv_sv_cnv.md` and functions for circos plots in `/0_utils/circos_utils.R`
 
-## Supplementary Figures
+# Code for supplementary figures
 
 * Detailed WGS coverage and mutation detection sensitivity are available at `2_wgs/2_overall_stats.Rmd`
-* Matched signature analysis in `3_signature_analyzer/2_aggregate_runs_and_replot_matrices.Rmd`
-* Cosine similarity figure in `3_signature_analyzer/2_aggregate_runs_and_replot_matrices.Rmd`
+* Power analysis at `2_wgs/2_overall_stats.md`
+* Matched signature analysis and cosine similarity in `3_signature_analyzer/2_aggregate_runs_and_replot_matrices.Rmd`
+* Longitidinal heatmap and driver mutations in `2_wgs/7_heatmap_serial_wgs.md` and `4_phylogic/2_post_clustering_SNVs_longitudinal_samples.md#driver-mutations-over-time`
