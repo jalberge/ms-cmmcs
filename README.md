@@ -1,6 +1,6 @@
 This repository contains code, instructions and data used to analyze and produce figures of:
 
-**MinimuMM-seq: Genome sequencing of circulating tumor cells for minimally invasive molecular characterization of multiple myeloma pathology**
+Ankit K. Dutta, Jean-Baptiste Alberge, Elizabeth D. Lightbody, Cody J. Boehner, Andrew Dunford, Romanos Sklavenitis-Pistofidis, Tarek H. Mouhieddine, Annie N. Cowan, Nang Kham Su, Erica M. Horowitz, Hadley Barr, Laura Hevenor, Jenna B. Beckwith, Jacqueline Perry, Amanda Cao, Ziao Lin, Frank K. Kuhr, Richard G. Del Mastro, Omar Nadeem, Patricia T. Greipp, Chip Stewart, Daniel Auclair, Gad Getz, Irene M. Ghobrial; MinimuMM-seq: Genome sequencing of circulating tumor cells for minimally invasive molecular characterization of multiple myeloma pathology. _Cancer Discov 2022_; https://doi.org/10.1158/2159-8290.CD-22-0482
 
 # Data analysis and figure generation
 
