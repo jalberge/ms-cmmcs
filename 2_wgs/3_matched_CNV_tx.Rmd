@@ -1,0 +1,151 @@
+---
+title: "Heatmap generation for Matched samples BMPCs-CMMCs"
+author: "Ankit Dutta and JB Alberge"
+date: September 9, 2022
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: kable
+    keep_md: true
+---
+
+Storing initial CNV heatmap and paired tx data here
+
+# Initial parameters
+
+```{r cache=FALSE, message=FALSE, warning=FALSE}
+source("0_annotate_samples.R")
+dir.create("figures")
+
+paired.participants <- paste0("CTF", 
+                              c("001", "002", "003", 
+                                "012", "013", "015", "016", "017", "018", "019", 
+                                "021", "023", "025", 
+                                "034", "036", 
+                                "046", "047", "048", 
+                                "050", "052", "053", "054", "055", "058"))
+
+CNV.df <- read_tsv("data/Sept9_reprocessed.cnv.revisions3.seg") %>% 
+  inner_join(clinicaldata, by=c("entity:sample_id")) %>% 
+  filter(isRef==TRUE)
+
+ctf.tx <- read_tsv("../data/FullPaper2022.aggregated.ctf.whitelist.sep9.txt") %>% 
+  filter(Keep==TRUE) %>%
+  right_join(clinicaldata, by=c("ID"="entity:sample_id")) %>%
+  filter(isRef==TRUE)
+
+contigs <- 1:22
+
+catch.the.fish.pal <- c('TRUE'="#111111", 'FALSE'="#74C476", 'NA'="#FFFFFF")
+
+```
+
+# post-process CNV matrix
+
+Here the trick is to split each row into BMPC and CMMC categories so that facet / panels are kept for chr and participants
+
+```{r}
+
+CNV.df <- CNV.df %>% 
+  filter(Chromosome %in% contigs & participant %in% paired.participants) %>%
+  mutate(Chromosome=factor(Chromosome, levels=contigs),
+         Norm_Segment_Mean = pmax(0, pmin(Segment_Mean, 4)),
+         YMIN=ifelse(tissue=="BMPCs", 0, 1), 
+         YMAX =ifelse(tissue=="BMPCs", 1, 2)) %>%
+  relocate(Chromosome, Start, End, Norm_Segment_Mean)
+
+```
+
+# CNV
+
+```{r}
+fig.cnv <- ggplot(CNV.df, 
+                  aes(xmin = Start, xmax = End, ymin = YMIN, ymax = YMAX)) +
+  geom_rect(aes(fill = Norm_Segment_Mean), colour = NA, size=0) +
+  geom_hline(yintercept = 1, size=0.3, color="darkgrey", alpha=0.5) +
+  scale_fill_gradient2(low = "#2166AC", high = "#B2182B", mid = "#F7F7F7", midpoint = 2, na.value = "#F7F7F7") +
+  labs(fill = "Copy number") +
+  facet_grid(rows = vars(participant),
+             cols = vars(Chromosome),
+             scales = "free", 
+             space = "free",
+             switch = "y") +
+  theme_nothing() +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.background = element_rect(fill="#F7F7F7"),
+    panel.spacing.y = unit(0.2, "lines"),
+    panel.spacing.x = unit(0, "lines"),
+    panel.border = element_rect(size=.3, fill = NA),
+    strip.text.y.left = element_text(angle = 0, size = 7),
+    strip.text.x.top = element_text(angle = 0, size = 7))
+```
+
+# post-process SV results
+
+False positive filtered out
+
+```{r}
+re.con.pts <- ctf.tx %>% 
+  filter(Keep=="TRUE" | is.na(Keep)) %>%
+  filter(participant %in% paired.participants & condition=="tumour") %>%
+  mutate(TX=paste0("t(", pmin(CHR.ONCO, CHR.IG), ";", pmax(CHR.ONCO, CHR.IG), ")"),
+  sample_short=paste0(participant, " ", tissue))
+
+re.con.pts$YMIN <- ifelse(re.con.pts$tissue=="BMPCs", 0, 1)
+re.con.pts$YMAX <- ifelse(re.con.pts$tissue=="BMPCs", 1, 2)
+```
+
+# SV plot
+
+```{r}
+sv.plot <- ggplot(re.con.pts, aes(
+  xmin = 0,
+  xmax = 1e6,
+  ymin = YMIN,
+  ymax = YMAX
+)) +
+  geom_rect(aes(fill=FoundbyFISH), colour = NA, size=0) +
+  geom_hline(yintercept = 1, size=0.3, color="darkgrey", alpha=0.5) +
+  facet_grid(rows = vars(participant),
+             cols = vars(TX),
+             scales = "free",
+             space = "free",
+             switch = "y") +
+  scale_fill_manual(values=catch.the.fish.pal, na.value = "white") +
+  theme_nothing() + 
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    panel.spacing.y = unit(0.2, "lines"),
+    panel.spacing.x = unit(0, "lines"),
+    panel.border = element_rect(size=.3, fill = NA, color=NA),
+    strip.text.y.left = element_blank(),
+    strip.text.x.top = element_text(size=7))
+```
+
+# Combine SV and CNV heatmap
+
+```{r}
+
+full.plot <- plot_grid(fig.cnv, sv.plot, rel_widths = c(5,1), align = "hv")
+
+print(full.plot)
+
+ggsave(full.plot, filename = "figures/fig2-cnv-ig.png", width = 7, height = 4)
+ggsave(full.plot, filename = "figures/fig2-cnv-ig.pdf", width = 7, height = 4)
+
+```
+
+
+# Session info
+
+```{r, eval=TRUE, include=TRUE, comment=NA}
+sessionInfo()
+```

@@ -1,0 +1,207 @@
+---
+title: "Overall statistics"
+author: "Ankit Dutta and JB Alberge"
+date: September 9, 2022
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: kable
+    keep_md: true
+---
+
+Analyzing initial CTC pairs. Important to distinguish between matched (paired participant = bone marrow AND peripheral blood sample available) and unmatched (unpaired participant = peripheral blood only).
+
+# Data init.
+
+```{r cache=FALSE, message=FALSE, warning=FALSE}
+source("0_annotate_samples.R")
+dir.create("figures", recursive = TRUE, showWarnings = FALSE)
+
+paired.participants <- paste0("CTF", 
+                              c("001", "002", "003", 
+                                "012", "013", "015", "016", "017", "018", "019", 
+                                "021", "023", "025", 
+                                "034", "036", 
+                                "046", "047", "048", 
+                                "050", "052", "053", "054", "055", "058"))
+
+not.catchthefish <- c("CTF012_BMPCs", "CTF015_BMPCs", "CTF016_BMPCs", "CTF017_BMPCs", "CTF047_BMPCs", "CTF052_BMPCs", "CTF053_BMPCs", "CTF058_BMPCs")
+
+```
+
+# Overview (purity and number of cells)
+
+```{r cache=TRUE, message=FALSE, warning=FALSE}
+
+purity.df <-  clinicaldata |> 
+  filter(!is.na(purity) & `entity:sample_id` %nin% not.catchthefish) # these matched marrows have unknown (large) cell count
+
+purity.summary <- purity.df %>%
+  group_by(tissue) %>%
+  summarise(N=n(), median=median(purity), min=min(purity), max=max(purity), q25=quantile(purity, .25), q72=quantile(purity, .75))
+
+counts.summary <- purity.df %>%
+  group_by(tissue) %>%
+  summarise(N=n(), median=median(N_cells), min=min(N_cells), max=max(N_cells), q25=quantile(N_cells, .25), q72=quantile(N_cells, .75))
+
+bmpc.purity.label = paste0("N = ", pull(subset(purity.summary, tissue=="BMPCs"), "N"),
+                           "\nMedian\n", percent(pull(subset(purity.summary, tissue=="BMPCs"), "median")))
+
+cmmc.purity.label = paste0("N = ", pull(subset(purity.summary, tissue=="CMMCs"), "N"),
+                           "\nMedian\n", percent(pull(subset(purity.summary, tissue=="CMMCs"), "median")))
+
+bmpc.count.label <- paste0("N = ", pull(subset(counts.summary, tissue=="BMPCs"), "N"), "\nMedian = ", comma(pull(subset(counts.summary, tissue=="BMPCs"), "median"), accuracy = 100))
+cmmc.count.label <- paste0("N = ", pull(subset(counts.summary, tissue=="CMMCs"), "N"), "\nMedian = ", comma(pull(subset(counts.summary, tissue=="CMMCs"), "median"), accuracy = 1))
+
+p1 <- ggplot(purity.df, aes(tissue, purity, color=tissue)) +
+  geom_boxplot(fill = NA, outlier.shape = NA) + # don't show outliers twice if already showing real data points
+  geom_jitter(width = 0.3, shape=21, alpha=1) +
+  scale_y_continuous(limits = c(0, NA), labels = scales::percent) +
+  scale_color_manual(values=paired.pals) +
+  annotate(geom = "text", x = 0.5, label=bmpc.purity.label, y=0.1, size=2.5, fontface = 'italic', hjust=0) +
+  annotate(geom = "text", x = 1.5, label=cmmc.purity.label, y=0.1, size=2.5, fontface = 'italic', hjust=0) +
+  labs(x="", y="Tumor purity") +
+  theme_bw() +
+  theme(panel.grid = element_blank(), legend.position = "none", aspect.ratio = 2) +
+  stat_compare_means(label = "p.signif", label.x = 1.5, label.y = 1)
+       
+p2 <- ggplot(purity.df, aes(tissue, N_cells, color=tissue)) +
+  geom_boxplot(fill = NA, outlier.shape = NA) +
+  geom_jitter(width = 0.3, shape=21, alpha=1) +
+  scale_y_continuous(trans = "pseudo_log", labels=scales::comma, breaks=breaks) +
+  annotate(geom = "text", x = 1.1, label=bmpc.count.label, y=50, size=2.5, fontface = 'italic') +
+  annotate(geom = "text", x = 2, label=cmmc.count.label, y=20, size=2.5, fontface = 'italic') +
+  scale_color_manual(values=paired.pals) +
+  scale_fill_manual(values=paired.pals) +
+  labs(x="", y="Cells sequenced") +
+  theme_bw() +
+  theme(panel.grid = element_blank(), legend.position = "none", aspect.ratio = 2) +
+  stat_compare_means(label = "p.signif", label.x = 1.5, label.y = 10.5)
+
+p.full <- plot_grid(p2, p1, align = c("hv"))
+ggsave(p.full, filename = "figures/purity_counts_boxplot_matched.pdf", height = 3, width = 4)
+
+ggsave(p1, filename = "figures/purity_boxplot_matched.pdf", width = 2, height = 3)
+ggsave(p1, filename = "figures/purity_boxplot_matched.png", width = 2, height = 3, dpi = 300)
+
+ggsave(p2, filename = "figures/count_cells_boxplot_matched.pdf", width = 2, height = 3)
+ggsave(p2, filename = "figures/count_cells_boxplot_matched.png", width = 2, height = 3, dpi = 300)
+
+```
+
+
+# Power analysis
+
+Based on MuTect java code on github at broadinstitute/mutect
+
+```{r cache=TRUE, message=FALSE, warning=FALSE}
+
+# power to detect clonal event given purity and so on
+power.analysis.data <- clinicaldata %>%
+  filter(tissue %in% c("BMPCs", "CMMCs")) %>%
+  rowwise() %>%
+  mutate(Power_Clonal=calculate_tumor_power(depth = MEDIAN_COVERAGE, 
+                          eps=10^-3, tlod=6.3,
+                          rho= purity,
+                          psi=2,
+                          CCF=1),
+         Power_Subclonal=calculate_tumor_power(depth = MEDIAN_COVERAGE, 
+                          eps=10^-3, tlod=6.3,
+                          rho= purity,
+                          psi=2,
+                          CCF=0.5),
+         Power_Subsubclonal=calculate_tumor_power(depth = MEDIAN_COVERAGE, 
+                          eps=10^-3, tlod=6.3,
+                          rho= purity,
+                          psi=2,
+                          CCF=0.25))
+
+p.power <- ggplot(power.analysis.data, aes(N_cells)) + 
+  geom_point(size=2, shape=21, aes(y=Power_Clonal, color=tissue, fill=tissue)) + 
+  geom_smooth(aes(y=Power_Clonal), se = FALSE, color="black", size=.5) +
+  geom_point(size=1, shape=2, aes(y=Power_Subclonal, color=tissue), ) + 
+  geom_smooth(aes(y=Power_Subclonal), se = FALSE, color="darkgrey", size=.5) +
+  scale_x_continuous(breaks=breaks, trans = "pseudo_log") + 
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x="Number of cells", y="Detection sensitivity\nClonal and 50% clonal SNVs") +
+  scale_color_manual(values=paired.pals) +
+  scale_fill_manual(values=paired.pals) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), aspect.ratio = 1)
+
+print(p.power)
+ggsave(p.power, filename="figures/powerfigure-ccf1-0.5.png", width = 4, height = 4)
+ggsave(p.power, filename="figures/powerfigure-ccf1-0.5.pdf", width = 4, height = 4)
+
+power.analysis.data.summary.stats <- power.analysis.data %>%
+  filter(tissue=="CMMCs") %>%
+  ungroup() %>%
+  summarise(Median_Power_Clonal=median(Power_Clonal),
+            Median_Power_Subclonal=median(Power_Subclonal),
+            Q25_Power_Clonal=quantile(Power_Clonal, .25),
+            Q75_Power_Clonal=quantile(Power_Clonal, .75),
+            Q25_Power_Subclonal=quantile(Power_Subclonal, .25),
+            Q75_Power_Subclonal=quantile(Power_Subclonal, .75),
+            )
+
+power.analysis.data.summary.stats
+
+cmmc.power <- power.analysis.data %>%
+  filter(tissue=="CMMCs") %>%
+  ggplot(aes(1)) +
+  geom_hline(yintercept = 0.8, linetype=2) +
+  geom_boxplot(aes(y=Power_Clonal), position = position_nudge(x=-0.11), width=0.2, color="#99000D") +
+  geom_boxplot(aes(y=Power_Subclonal), position = position_nudge(x=0.11), width=0.2, color="#FCBBA1") +
+  annotate(geom = "text", x = 0.9, y=0.05, label=paste0("Median\n", scales::percent(pull(power.analysis.data.summary.stats, Median_Power_Clonal))), size=2.5, fontface = 'italic') +
+  annotate(geom = "text", x = 1.1, y=0.05, label=paste0("Median\n", scales::percent(pull(power.analysis.data.summary.stats, Median_Power_Subclonal))), size=2.5, fontface = 'italic') +
+  scale_y_continuous(limits = c(0, 1), labels=scales::percent, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)) +
+  theme_bw() +
+  scale_color_manual(values=brewer.pal(8, "Reds")) +
+  scale_fill_manual(values=paired.pals) +
+  labs(x="") +
+  theme(panel.grid = element_blank(), aspect.ratio = 3, axis.ticks.x = element_blank(), axis.text.x = element_blank())
+
+print(cmmc.power)
+
+ggsave(cmmc.power, filename="figures/powerfigure-ccf1-0.5-cmmc_only_boxplot.png", width = 4, height = 4)
+ggsave(cmmc.power, filename="figures/powerfigure-ccf1-0.5-cmmc_only_boxplot.pdf", width = 4, height = 4)
+
+```
+
+
+# WGS coverage
+
+```{r}
+cor.data.wgs.coverage <- clinicaldata %>%
+  filter(tissue=="CMMCs") %>%
+  mutate(Log_N_Cells=log10(N_cells)) %>%
+  summarize(tidy(cor.test(Log_N_Cells, MEDIAN_COVERAGE)))
+
+wgs.coverage.details <- clinicaldata %>%
+  filter(tissue=="CMMCs") %>%
+  ggplot(aes(N_cells, MEDIAN_COVERAGE)) +
+  geom_smooth(method="lm", color="black") +
+  annotate(geom="text", label=paste0("R=", signif(pull(cor.data.wgs.coverage, estimate), 3), "; p=", signif(pull(cor.data.wgs.coverage, p.value), 1)), x = 100, y=60, size=3) +
+  geom_point() +
+  geom_linerange(aes(ymin=MEDIAN_COVERAGE-MAD_COVERAGE, ymax=MEDIAN_COVERAGE+MAD_COVERAGE)) +
+  scale_x_continuous(trans = "pseudo_log", limits=c(NA, NA), breaks = breaks, minor_breaks = minor_breaks, labels = scales::number) +
+  scale_y_continuous(limits=c(0, NA)) +
+  labs(x="Number of cells", y="Genomic coverage (X)") +
+  theme_bw() +
+  theme(aspect.ratio = 1, panel.grid = element_blank())
+
+
+print(wgs.coverage.details)
+
+ggsave(wgs.coverage.details, filename="figures/wgs_coverage_details.png", width = 4, height = 4)
+ggsave(wgs.coverage.details, filename="figures/wgs_coverage_details.pdf", width = 4, height = 4)
+
+
+```
+
+# Session info
+
+```{r, eval=TRUE, include=TRUE, comment=NA}
+sessionInfo()
+```

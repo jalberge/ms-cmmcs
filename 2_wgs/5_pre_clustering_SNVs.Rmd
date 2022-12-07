@@ -1,0 +1,121 @@
+---
+title: "Post ABSOLUTE, pre PHYLOGIC simple statistics"
+author: "Ankit Dutta and JB Alberge"
+date: September, 2022
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    df_print: kable
+    keep_md: true
+---
+
+
+```{r cache=FALSE, message=FALSE, warning=FALSE}
+source("0_annotate_samples.R")
+dir.create("figures")
+
+paired.participants <- paste0("CTF", 
+                              c("001", "002", "003", 
+                                "012", "013", "015", "016", "017", "018", "019", 
+                                "021", "023", "025", 
+                                "034", "036", 
+                                "046", "047", "048", 
+                                "050", "052", "053", "054", "055", "058"))
+
+```
+
+Contains sample and cohort-level information on variant detection
+
+# SNVs and indels post-process
+
+These two participants with matched BMPCs didn't achieve 80% SNV sensitivity and are in a single facet
+
+```{r}
+
+last.maf <- read_maf("../data/AllRevisions.txt")
+annot.maf <- last.maf %>% inner_join(clinicaldata, by=c("Tumor_Sample_Barcode"))
+
+# overall we're powered to detect mutations at 33% CCF by MuTect calculation
+summarize.paired.annot.maf <- annot.maf %>%
+  filter(ccf_hat>0.33 & participant %in% paired.participants & isRef==TRUE) %>%
+  group_by(participant, tissue) %>%
+  summarize(N_mut=n(),
+            N_snp=sum(Variant_Type=="SNP", na.rm = TRUE),
+            N_clonal=sum(ccf_hat>=0.9, na.rm = TRUE),
+            N_subclonal=sum(ccf_hat>=0.1 & ccf_hat<0.9, na.rm = TRUE),
+            N_nonsym=sum(Variant_Classification %in% non.synonymous)) %>%
+  arrange(tissue) %>%
+  mutate(powered=!(participant %in% c("CTF001", "CTF021")))
+
+```
+
+# Jaccard Index and intersection analysis of mutations between bone marrow and peripheral blood compartments
+
+```{r}
+
+# estimate mutation intersection
+ctc <- annot.maf %>%
+  filter(ccf_hat>0 & participant %in% paired.participants & isRef==TRUE & tissue=="CMMCs") %>%
+  select(participant, Chromosome, Start_position, End_position, Tumor_Seq_Allele2, Variant_Type, Variant_Classification)
+bmpc <- annot.maf %>%
+  filter(ccf_hat>0 & participant %in% paired.participants & isRef==TRUE & tissue=="BMPCs") %>%
+  select(participant, Chromosome, Start_position, End_position, Tumor_Seq_Allele2, Variant_Type, Variant_Classification)
+intersect.tissue.per.participant <- inner_join(ctc, bmpc) %>%
+  mutate(tissue="intersection") %>%
+  group_by(participant, tissue) %>%
+  summarize(N_mut=n(),
+            N_snp=sum(Variant_Type=="SNP", na.rm = TRUE),
+            N_nonsym=sum(Variant_Classification %in% non.synonymous)) %>%
+  mutate(powered=!(participant %in% c("CTF001", "CTF021")))
+union.tissue.per.participant <- full_join(ctc, bmpc) %>%
+  mutate(tissue="full_join") %>%
+  group_by(participant, tissue) %>%
+  summarize(N_mut=n(),
+            N_snp=sum(Variant_Type=="SNP", na.rm = TRUE),
+            N_nonsym=sum(Variant_Classification %in% non.synonymous)) %>%
+  mutate(powered=!(participant %in% c("CTF001", "CTF021")))
+jaccard.index <- rbindlist(list(intersect.tissue.per.participant, union.tissue.per.participant), fill=TRUE) %>%
+  group_by(participant) %>%
+  summarize(jaccard.index = N_mut[tissue=="intersection"]/N_mut[tissue=="full_join"]) %>%
+  ungroup() %>%
+  summarise(tidy(summary(jaccard.index)))
+
+tibble(jaccard.index)
+
+```
+
+# Show mutants
+
+```{r}
+
+snv.matched.comp <- ggplot(summarize.paired.annot.maf, aes(x=fct_reorder(participant, N_mut, first), xend=fct_reorder(participant, N_mut, first), y=N_mut, fill=tissue)) +
+  geom_bar(stat='identity', position = 'dodge') +
+  geom_point(data=intersect.tissue.per.participant, aes(y=N_mut), color="#3B3B3B") +
+  geom_hline(yintercept = c(1130, 8244), linetype=2) + # range from Oben et al
+  scale_y_continuous(breaks = c(0, 10, 100, 1e3, 1e4), limits=c(0, 4*1e4), trans = "pseudo_log") +
+  facet_grid(~powered, scales="free_x", space = "free_x") +
+  scale_fill_manual(values=c(paired.pals, "intersection"="green")) +
+  labs(x="", y="Number of SNVs") +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        panel.spacing.y = unit(0.3, "lines"),
+        panel.spacing.x = unit(0, "lines"),
+        panel.border = element_rect(size=.3, fill = NA))
+
+print(snv.matched.comp)
+
+ggsave("figures/snv.matched.comp.rev.png", snv.matched.comp, width = 4, height = 4)
+ggsave("figures/snv.matched.comp.rev.pdf", snv.matched.comp, width = 4, height = 4)
+```
+
+
+# Session info
+
+```{r, eval=TRUE, include=TRUE, comment=NA}
+sessionInfo()
+```

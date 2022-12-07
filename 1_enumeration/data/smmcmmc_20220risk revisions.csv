@@ -1,0 +1,95 @@
+﻿ID,Stage,CellRescue,BMperc,M Spike,FLC Ratio,20-2-20 stage,Comment
+MN0004,SMM,43836,30,1.85,6.78,Intermediate,
+MN0005,SMM,95,30,2.26,16.18,High,
+MN0006,SMM,150,10,2.12,4.92,Intermediate,
+MN0007,SMM,34,15,1.43,2.49,Low,
+MN0010,SMM,10,40,3.14,9.58,High,
+MN0011,SMM,5,30,1.09,0.831578947,Intermediate,
+MN0016,SMM,28,20,1.55,6.76,Intermediate,
+MN0018,SMM,2,15,0.62,2.540540541,Low,
+MN0026,SMM,408,20,1.25,12.16494845,Intermediate,
+MN0028,SMM,17,5,0.76,1.555555556,Low,
+MN0030,SMM,0,10,1.58,2.88,Low,
+MN0031,SMM,0,15,,1.25,Low,M spike not detected
+MN0032,SMM,6,5,2.46,6.297297297,Intermediate,
+MN0037,SMM,0,10,,21.84,Intermediate,M spike not detected
+MN0039,SMM,21,20,1.47,1.85520362,Intermediate,
+MN0044,SMM,398,20,0.65,73.36,High,
+MN0049,SMM,0,15,1.16,3.271428571,Low,
+MN0054,SMM,17,10,0.71,0.719512195,Low,
+MN0055,SMM,180,10,0.38,14.81860465,Low,
+MN0057,SMM,36,50,1.64,5.54,Low,
+MN0063,SMM,5,15,0.72,1.33,Low,
+MN0065,SMM,4,5,0.52,41.4,Intermediate,aspirate only
+MN0067,SMM,170,50,1.93,64.56,High,
+MN0070,SMM,2,20,1.81,3.238866397,Intermediate,
+MN0074,SMM,522,20,1.61,14.22,Intermediate,
+MN0077,SMM,41,10,1.16,1.3,Low,
+MN0081,SMM,13,25,0.55,9.781456954,Intermediate,
+MN0086,SMM,61,20,1.7,7.357894737,Intermediate,
+MN0087,SMM,9577,50,1.21,14.42241379,Intermediate,
+MN0091,SMM,8,10,1.29,1.44,Low,
+MN0103,SMM,0,5,,0.58,Low,M spike not detected
+MN0107,SMM,29,20,0.98,4.01,Intermediate,
+MN0114,SMM,23,15,1.5,15.55,Low,Scattered PC
+MN0115,SMM,6,10,0.19,9.503703704,Low,
+MN0121,SMM,10,30,1.68,29.93,High,
+MN0123,SMM,12,20,1.73,,Intermediate,No FLC ratio
+MN0129,SMM,1,10,0.54,1.68,Low,
+MN0137,SMM,3,10,0.52,1.28,Low,
+MN0139,SMM,3077,20,3.34,1.75,Intermediate,
+MN0142,SMM,7,5,1.88,23.78787879,Intermediate,
+MN0147,SMM,0,,,1.01,Low,"Scattered PC, M spike not detected"
+MN0148,SMM,1249,20,2.47,5.18,High,
+MN0149,SMM,0,5,0.22,5.22,Low,
+MN0150,SMM,7,10,0.31,19.64,Intermediate,
+MN0151,SMM,868,20,1.99,8.010638298,Intermediate,Scattered PC
+MN0153,SMM,15,20,2.53,3.355263158,High,
+MN0154,SMM,235,10,1.88,6.56,Low,
+MN0156,SMM,4,20,1.12,10.28,Intermediate,
+MN0159,SMM,1631,20,1.05,6.240963855,Intermediate,
+MN0160,SMM,5,10,0.7,1.35,Low,
+MN0168,SMM,0,,,1.24,Low,"Scattered PC, M spike not detected"
+MN0171,SMM,0,15,1.19,5.173913043,Low,
+MN0174,SMM,3,5,,0.77,Low,M spike not detected
+MN0176,SMM,12,10,0.56,1.9,Low,
+MN0177,SMM,0,5,0.27,1.27,Low,
+MN0178,SMM,12358,15,,0.05,Low,M spike not detected
+MN0179,SMM,0,10,0.43,70.44736842,Intermediate,
+MN0183,SMM,10,20,1.28,3.582524272,Intermediate,
+MN0188,SMM,0,15,,0.04,Low,M spike not detected
+MN0189,SMM,22,20,2.22,3.14,High,
+MN0190,SMM,65,20,1.36,1.78,Intermediate,
+MN0191,SMM,7,10,0.36,2.12,Low,
+MN0193,SMM,2,10,1.59,4.1,Low,
+MN0194,SMM,3,40,2.83,0.78,High,
+MN0195,SMM,0,15,1.73,5.66,Low,
+MN0197,SMM,0,5,,0.57,Low,M spike not detected
+MN0203,SMM,85,15,1.89,3.07,Low,
+MN0209,SMM,52,23,0.87,8.953757225,Intermediate,
+MN0017,SMM,15,11,3.57,49.67,Intermediate,
+MN0022,SMM,3824,50,1.36,188.8,High,
+Rev014,SMM,0,5,3.97,19.96,High,Revisions cohort
+Rev015,SMM,6000,30,2.7,13.17,High,Revisions cohort
+Rev016,SMM,1860,40,2.43,26.58,High,Revisions cohort
+Rev017,SMM,1326,50,2.93,3.21,High,Revisions cohort
+Rev018,SMM,49,20,2.08,8.36,High,Revisions cohort
+Rev019,SMM,108,30,3.02,20.88,High,Revisions cohort
+Rev020,SMM,1930,20,2.76,6.68,High,Revisions cohort
+Rev021,SMM,480,50,4.84,8.07,High,Revisions cohort
+Rev022,SMM,605,20,2.1,4.18,High,Revisions cohort
+Rev023,SMM,38,2,1.12,27.98,Intermediate,Revisions cohort
+Rev024,SMM,0,30,1.58,3.33,Intermediate,Revisions cohort
+Rev025,SMM,14,30,1.53,1.59,Intermediate,Revisions cohort
+Rev026,SMM,59,10,3.1,3.68,Intermediate,Revisions cohort
+Rev027,SMM,14,10,2.48,2.81,Intermediate,Revisions cohort
+Rev028,SMM,420,20,1.55,16.40,Intermediate,Revisions cohort
+Rev029,SMM,38,40,0.8,3.45,Intermediate,Revisions cohort
+Rev030,SMM,1030,10.00,1.44,1.17,Low,Revisions cohort
+Rev031,SMM,30,10,0.62,0.70,Low,Revisions cohort
+Rev032,SMM,4,10,1.11,1.28,Low,Revisions cohort
+Rev033,SMM,5,10,0.94,0.59,Low,Revisions cohort
+Rev034,SMM,2,10,0.69,0.28,Low,Revisions cohort
+Rev035,SMM,1,5,0,0.95,Low,"Revisions cohort, Mspike admixture"
+Rev036,SMM,9,10,0.42,1.91,Low,Revisions cohort
+Rev037,SMM,2740,15,0.38,2.80,Low,Revisions cohort
